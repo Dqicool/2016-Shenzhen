@@ -47,5 +47,4 @@ function [ErrPC, ErrID,ErrPT,ErrIDA] = ErrorAnalyse(PauseCount ,InitialDelay, Pa
                    -8, sum((PauseCount - OOPauseCount == -8));
                     9, sum((PauseCount - OOPauseCount ==  9));
                    -9, sum((PauseCount - OOPauseCount == -9))];
-
 end
