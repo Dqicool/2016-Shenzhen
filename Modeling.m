@@ -34,19 +34,22 @@ end
 
 function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS)
     global DataSize
-    time                = 0;
+    time                = zeros(DataSize, 1);
     PauseTotal          = zeros(DataSize, 1);
     StartSymbol         = true (DataSize, 1);
     PauseCount          = zeros(DataSize, 1);
-    while time < 30000
-        time                = time + 1;
+    SendT               = 4288 ./ PlayAvgSpeed;                                                                                 %引入发送时间概念
+    FinishSymbol        = zeros(DataSize, 1);                                                                                   %播放结束标志
+
+    while sum(FinishSymbol) < DataSize
+        time                = time + SendT;
+        FinishSymbol        = (time >= 30000);
         PlayTime            = time - PauseTotal;                                                                                %播放时间
-        
-        DownloadTempPool    = DownloadTempPool - StartSymbol .* CodeSpeed .* RndCS(PlayTime) + ...                              %减去播放量
-                              PlayAvgSpeed .* E2ERTT .* (mod(time, E2ERTT) == 0);                                               %每传输轮次增加下载量
-        PauseCount          = PauseCount + (DownloadTempPool < CodeSpeed .* RndCS(PlayTime)) .* StartSymbol;                    %卡段时间
-        StartSymbol         = StartSymbol - (DownloadTempPool < CodeSpeed .* RndCS(PlayTime)) .* StartSymbol + ...              %刚刚开始卡顿的数目
+        DownloadTempPool    = DownloadTempPool - StartSymbol .* CodeSpeed .* RndCS(1 + fix(PlayTime)) .* SendT + ...                              %减去播放量
+                              4128;                                               %4288 - 160
+        PauseCount          = PauseCount + (DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime))) .* StartSymbol;                    %卡段时间
+        StartSymbol         = StartSymbol - (DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime))) .* StartSymbol + ...              %刚刚开始卡顿的数目
                               (~StartSymbol) .* (DownloadTempPool > 2700 .*  CodeSpeed);                                        %卡顿还没有开始的数目
-        PauseTotal          = PauseTotal + (~StartSymbol);
+        PauseTotal          = PauseTotal + (~StartSymbol) .* SendT;
     end
 end

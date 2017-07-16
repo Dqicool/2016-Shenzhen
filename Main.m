@@ -1,10 +1,10 @@
 cc;
-load data
+load exdata
 OOInitialDataAmong  = zeros(max(size(CodeSpeed)), 1);
 OOInitialDelay      = zeros(max(size(CodeSpeed)), 1);
 OOPauseTotal        = zeros(max(size(CodeSpeed)), 1);
 OOPauseCount        = zeros(max(size(CodeSpeed)), 1);
-RndCS               = CSShake();
+RndCS               = normrnd(1,0.33,60000,1);
 tic
     for ii = 1:max(size(CodeSpeed))
         [OOInitialDataAmong(ii), OOPauseTotal(ii), OOInitialDelay(ii), OOPauseCount(ii)] = ...
