@@ -1,10 +1,10 @@
-function [InitialDataAmong, PauseTotal, InitialDelay, PauseCount] = Modeling(E2ERTT, PlayAvgSpeed, InitialSpeedPeak, CodeSpeed, RndCS, TotalAvgSpeed)
+function [InitialDataAmong, PauseTotal, InitialDelay, PauseCount] = Modeling(E2ERTT, PlayAvgSpeed, InitialSpeedPeak, CodeSpeed, RndCS, TotalAvgSpeed, Rndloss)
     global DataSize
     DataSize                                            = max(size(CodeSpeed));
     InitialPreDelay                                     = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak);
     [InitialDataAmong ,InitialDelay, DownloadTempPool]  = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, TotalAvgSpeed);
     InitialDelay                                        = InitialDelay + InitialPreDelay;
-    [PauseTotal, PauseCount]                            = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS);
+    [PauseTotal, PauseCount]                            = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, Rndloss);
 end
 
 function InitialPreDelay = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak)
@@ -32,23 +32,28 @@ function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, Ini
     InitialDataAmong = DownloadTempPool * 0.129844961240310;
 end
 
-function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS)
+function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, Rndloss)
     global DataSize
     time                = zeros(DataSize, 1);
     PauseTotal          = zeros(DataSize, 1);
     StartSymbol         = true (DataSize, 1);
     PauseCount          = zeros(DataSize, 1);
     SendT               = 4288 ./ PlayAvgSpeed;                                                                                 %引入发送时间概念
-    FinishSymbol        = zeros(DataSize, 1);                                                                                   %播放结束标志
+    FinishSymbol        = false(DataSize, 1);                                                                                   %播放结束标志
+    PkgSent             = zeros(DataSize, 1);
+    PkgAcked            = zeros(DataSize, 1);
 
     while sum(FinishSymbol) < DataSize
         time                = time + SendT;
         FinishSymbol        = (time >= 30000);
+        PkgSent             = PkgSent + 1;
+        PkgAcked0           = PkgAcked;
+        PkgAcked            = PkgAcked + (time > E2ERTT) .* Rndloss(PkgSent);
         PlayTime            = time - PauseTotal;                                                                                %播放时间
-        DownloadTempPool    = DownloadTempPool - StartSymbol .* CodeSpeed .* RndCS(1 + fix(PlayTime)) .* SendT + ...                              %减去播放量
-                              4128;                                               %4288 - 160
-        PauseCount          = PauseCount + (DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime))) .* StartSymbol;                    %卡段时间
-        StartSymbol         = StartSymbol - (DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime))) .* StartSymbol + ...              %刚刚开始卡顿的数目
+        DownloadTempPool    = DownloadTempPool - StartSymbol .* CodeSpeed .* RndCS(1 + fix(PlayTime)) .* SendT + ...            %减去播放量
+                              4128 - 4128 * (E2ERTT ./ SendT) .* (PkgAcked == PkgAcked0) .* (time > E2ERTT);                                                                   %4288 - 160
+        PauseCount          = PauseCount + (DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime))) .* StartSymbol;           %卡段时间
+        StartSymbol         = StartSymbol - (DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime))) .* StartSymbol + ...     %刚刚开始卡顿的数目
                               (~StartSymbol) .* (DownloadTempPool > 2700 .*  CodeSpeed);                                        %卡顿还没有开始的数目
         PauseTotal          = PauseTotal + (~StartSymbol) .* SendT;
     end

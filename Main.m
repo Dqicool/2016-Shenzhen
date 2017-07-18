@@ -5,10 +5,11 @@ OOInitialDelay      = zeros(max(size(CodeSpeed)), 1);
 OOPauseTotal        = zeros(max(size(CodeSpeed)), 1);
 OOPauseCount        = zeros(max(size(CodeSpeed)), 1);
 RndCS               = normrnd(1,0.33,60000,1);
+Rndloss             = ~(rand(1000000,1) <= 0.0039);
 tic
     for ii = 1:max(size(CodeSpeed))
         [OOInitialDataAmong(ii), OOPauseTotal(ii), OOInitialDelay(ii), OOPauseCount(ii)] = ...
-        Modeling(E2ERTT(ii), PlayAvgSpeed(ii), InitialSpeedPeak(ii), CodeSpeed(ii), RndCS, TotalAvgSpeed(ii));
+        Modeling(E2ERTT(ii), PlayAvgSpeed(ii), InitialSpeedPeak(ii), CodeSpeed(ii), RndCS, TotalAvgSpeed(ii), Rndloss);
     end
 toc
 clear ii RndCS;
