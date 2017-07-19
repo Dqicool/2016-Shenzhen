@@ -36,3 +36,12 @@ end
     躺尸
 end
 
+18 July 2017
+    以 Addins = 4128 .* (mod(PkgSend,1e4) > PkgPRTT);实现了丢包
+    放弃纯粹模拟 改用这种近似
+    丢包率为1e4
+    在这个状态下对图形无明显影响
+
+    改用4维图像显示ModelP中的数据
+    颜色和点大小代表PauseCount
+end
