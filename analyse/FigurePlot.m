@@ -35,20 +35,20 @@ function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, In
     ylabel InitialDataAmong;    
 
     figure(5)
-    scatter3(PlayAvgSpeed, E2ERTT,   PauseTotal,   PauseCount + 1,   PauseCount, 'filled')
+    scatter3(PlayAvgSpeed, PauseTotal, PauseCount, 2, E2ERTT, 'filled')
     xlabel PlayAvgSpeed
-    ylabel E2ERTT
-    zlabel PauseTotal
+    ylabel PauseTotal
+    zlabel PauseCount
     colorbar
     box on
-    caxis([0,9])
+    caxis([0,150])
 
     figure(6)
-    scatter3(PlayAvgSpeed, E2ERTT, OOPauseTotal, OOPauseCount + 1, OOPauseCount, 'filled')
+    scatter3(PlayAvgSpeed, OOPauseTotal, OOPauseCount, 2, E2ERTT, 'filled')
     xlabel PlayAvgSpeed
-    ylabel E2ERTT
-    zlabel OOPauseTotal
+    ylabel OOPauseTotal
+    zlabel OOPauseCount
     colorbar
     box on
-    caxis([0,9])
+    caxis([0,150])
 end
