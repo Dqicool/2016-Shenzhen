@@ -1,10 +1,10 @@
-function [InitialDataAmong, PauseTotal, InitialDelay, PauseCount] = Modeling(E2ERTT, PlayAvgSpeed, InitialSpeedPeak, CodeSpeed, RndCS, TotalAvgSpeed)
+function [InitialDataAmong, PauseTotal, InitialDelay, PauseCount] = Modeling(E2ERTT, PlayAvgSpeed, InitialSpeedPeak, CodeSpeed, RndCS, TotalAvgSpeed, Replay)
     global DataSize
     DataSize                                            = max(size(CodeSpeed));
     InitialPreDelay                                     = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak);
     [InitialDataAmong ,InitialDelay, DownloadTempPool]  = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, TotalAvgSpeed);
     InitialDelay                                        = InitialDelay + InitialPreDelay;
-    [PauseTotal, PauseCount]                            = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS);
+    [PauseTotal, PauseCount]                            = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, Replay);
 end
 
 function InitialPreDelay = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak)
@@ -32,7 +32,7 @@ function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, Ini
     InitialDataAmong = DownloadTempPool * 0.129844961240310;
 end
 
-function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS)
+function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, Replay)
     global DataSize
     time                = zeros(DataSize, 1);
     PauseTotal          = zeros(DataSize, 1);
@@ -53,7 +53,7 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         PauseJudge          = DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime)) .* SendT;
         PauseCount          = PauseCount +  PauseJudge .* StartSymbol;                              %卡段时间
         StartSymbol         = StartSymbol - PauseJudge .* StartSymbol + ...                         %刚刚开始卡顿的数目
-                              (~StartSymbol) .* (DownloadTempPool > 2700 .* CodeSpeed);             %卡顿还没有开始的数目
+                              (~StartSymbol) .* (DownloadTempPool > Replay .* CodeSpeed);             %卡顿还没有开始的数目
         PauseTotal          = PauseTotal + (~StartSymbol) .* SendT;
     end
 end

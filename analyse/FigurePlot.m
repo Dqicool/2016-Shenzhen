@@ -18,7 +18,7 @@ function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, In
     zlabel InitialDelay
 
     figure(3)
-    scatter(InitialSpeedPeak, InitialDelay - OOInitialDelay, 3, abs(InitialDelay - OOInitialDelay) ./ InitialDelay, 'filled');
+    scatter3(InitialSpeedPeak, InitialDelay - OOInitialDelay, PlayAvgSpeed, 3, abs(InitialDelay - OOInitialDelay) ./ InitialDelay, 'filled');
     colorbar
     xlabel InitialSpeedPeak
     ylabel IDOOID
@@ -30,7 +30,7 @@ function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, In
     ylabel PCOOPC
 
     figure(5)
-    scatter(PlayAvgSpeed, PauseTotal - OOPauseTotal, 3, abs(PauseTotal - OOPauseTotal) ./ 1 + PauseTotal, 'filled');
+    scatter(PlayAvgSpeed, PauseTotal - OOPauseTotal, 3, abs(PauseTotal - OOPauseTotal) ./ (1 + PauseTotal), 'filled');
     colorbar
     xlabel PlayAvgSpeed 
     ylabel PTOOPT
