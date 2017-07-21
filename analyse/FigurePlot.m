@@ -1,4 +1,4 @@
-function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, InitialDelay, OOInitialDelay, InitialDataAmong, OOInitialDataAmong, CodeSpeed, PauseCount, OOPauseCount, E2ERTT)
+function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, InitialDelay, OOInitialDelay, InitialDataAmong, OOInitialDataAmong, CodeSpeed, PauseCount, OOPauseCount, E2ERTT, VMOS, OOVMOS)
     figure(1);
     plot3(PlayAvgSpeed,   PauseTotal,   PauseCount, 'r. ')
     hold on
@@ -35,6 +35,13 @@ function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, In
     xlabel PlayAvgSpeed 
     ylabel PTOOPT
     caxis([0, 1])
+
+    figure(6)
+    scatter3(InitialSpeedPeak, PlayAvgSpeed, E2ERTT, 3, abs(OOVMOS - VMOS), 'filled')
+    xlabel InitialSpeedPeak
+    ylabel PlayAvgSpeed
+    zlabel E2ERTT
+    colorbar
 
 %    figure(3)
 %    plot(InitialSpeedPeak,   InitialDataAmong / 8 ./ CodeSpeed,'r. ')

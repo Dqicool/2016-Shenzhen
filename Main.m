@@ -14,16 +14,12 @@ tic
 toc
 clear ii RndCS;
 
-FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, InitialDelay, OOInitialDelay, InitialDataAmong, OOInitialDataAmong, CodeSpeed, PauseCount, OOPauseCount, E2ERTT)
-%作图
-[ErrPC, ErrID,ErrPT,ErrIDA] = ErrorAnalyse(PauseCount ,InitialDelay, PauseTotal, InitialDataAmong, OOInitialDelay, OOPauseTotal, OOInitialDataAmong, OOPauseCount)
-[ABSMerrIDA, MerrIDA, ABSMerrID, MerrID, ABSMerrPT, MerrPT] = MeanErrAnalyse(InitialDelay, PauseTotal, InitialDataAmong, OOInitialDelay, OOPauseTotal, OOInitialDataAmong)
+[OOSloading, OOSStalling, OOVMOS] = ScorePredict(OOInitialDelay, OOPauseTotal);
 
-OOVMOS = Vrelation(PauseTotal,  InitialDelay);
-figure(6)
-plot3(PauseTotal,InitialDelay,VMOS,'r. ');
-hold on
-plot3(PauseTotal,InitialDelay,OOVMOS,'b. ');
-axis([0,30000,0,35000,0,5])
+FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, InitialDelay, OOInitialDelay, InitialDataAmong, OOInitialDataAmong, CodeSpeed, PauseCount, OOPauseCount, E2ERTT, VMOS, OOVMOS)
 
-%误差分析
+[ErrPC, ErrID,ErrPT,ErrIDA] = ...
+ErrorAnalyse(PauseCount ,InitialDelay, PauseTotal, InitialDataAmong, OOInitialDelay, OOPauseTotal, OOInitialDataAmong, OOPauseCount)
+
+[ABSMerrIDA, MerrIDA, ABSMerrID, MerrID, ABSMerrPT, MerrPT, ABSMerrVMOS, MerrVMOS] = ...
+MeanErrAnalyse(InitialDelay, PauseTotal, InitialDataAmong, OOInitialDelay, OOPauseTotal, OOInitialDataAmong, VMOS, OOVMOS)
