@@ -1,16 +1,16 @@
 function [InitialDataAmong, PauseTotal, InitialDelay, PauseCount] = Modeling(E2ERTT, PlayAvgSpeed, InitialSpeedPeak, CodeSpeed, RndCS, TotalAvgSpeed, Replay)
     global DataSize
     DataSize                                            = max(size(CodeSpeed));
-    InitialPreDelay                                     = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak);
+    InitialPreDelay                                     = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak, PlayAvgSpeed);
     [InitialDataAmong ,InitialDelay, DownloadTempPool]  = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, TotalAvgSpeed);
     InitialDelay                                        = InitialDelay + InitialPreDelay;
     [PauseTotal, PauseCount]                            = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, Replay);
 end
 
-function InitialPreDelay = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak)
+function InitialPreDelay = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak, PlayAvgSpeed)
     InitialPreDelay = 2.5 .* E2ERTT;
-    adPack          = 7650000;
-    InitialPreDelay = InitialPreDelay + adPack ./ (0.75 .* InitialSpeedPeak) .* (TotalAvgSpeed >= 380);
+    adPack          = 4200000;
+    InitialPreDelay = InitialPreDelay + adPack ./ (PlayAvgSpeed .* (2 + cpmodel(InitialSpeedPeak,E2ERTT,PlayAvgSpeed))) .* (TotalAvgSpeed >= 380);
 end
 
 function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, TotalAvgSpeed)
@@ -42,13 +42,14 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
     FinishSymbol        = false(DataSize, 1);                                                      %播放结束标志
     PkgPRTT             = E2ERTT ./ SendT;
     PkgSend             = ones (DataSize, 1);
+    DownloadTempPool    = 4128 .* PkgPRTT;
     while sum(FinishSymbol) < DataSize
         time                = time + SendT;
         PkgSend             = PkgSend + 1;
         FinishSymbol        = (time(end) >= 30000);
         PlayTime            = time - PauseTotal;                                                    %播放时间
         Addins              = 4128 .* (mod(PkgSend, 1e4) > PkgPRTT);                                %4288 - 160
-        PlayedOut           = StartSymbol .* CodeSpeed .* RndCS(1 + fix(PlayTime)) .* SendT;
+        PlayedOut           = 1.1 .* StartSymbol .* CodeSpeed .* RndCS(1 + fix(PlayTime)) .* SendT;
         DownloadTempPool    = DownloadTempPool - PlayedOut + Addins;
         PauseJudge          = DownloadTempPool < CodeSpeed .* RndCS(1 + fix(PlayTime)) .* SendT;
         PauseCount          = PauseCount +  PauseJudge .* StartSymbol;                              %卡段时间
