@@ -43,6 +43,14 @@ function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, In
     zlabel E2ERTT
     colorbar
 
+    figure(7)
+    plot3(PauseTotal, InitialDelay,VMOS,'r.')
+    hold on 
+    plot3(PauseTotal, InitialDelay,OOVMOS,'b.')
+    hold off
+    xlabel PauseTotal
+    ylabel InitialDelay   
+
 %    figure(3)
 %    plot(InitialSpeedPeak,   InitialDataAmong / 8 ./ CodeSpeed,'r. ')
 %    hold on
