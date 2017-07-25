@@ -41,6 +41,7 @@ function FigurePlot(PlayAvgSpeed, PauseTotal, OOPauseTotal, InitialSpeedPeak, In
     xlabel InitialSpeedPeak
     ylabel PlayAvgSpeed
     zlabel E2ERTT
+    caxis([0, 1])
     colorbar
 
     figure(7)
