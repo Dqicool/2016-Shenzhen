@@ -49,7 +49,7 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         PlayTime = time - PauseTotal;
         pkg  = pkg + 1;
         time = time + SndT;
-        RTTc = E2ERTT .* Replay(count);
+        RTTc = E2ERTT;% .* Replay(count);
         %新流体点
         Pipe.PkgNo(end + 1) = pkg;
         Pipe.SendTimeStamp(end + 1) = time;
