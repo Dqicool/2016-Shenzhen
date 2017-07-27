@@ -39,10 +39,12 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
     time = 0;
     pkg  = 1;
     Pipe = struct('PkgNo',1,'SendTimeStamp',0,'RecTimePre',E2ERTT,'Acked',0);
-    Cwnd = PlayAvgSpeed .* E2ERTT ./ 4288;
-    SndT = E2ERTT ./ Cwnd;
+    SndT = 4288 ./ PlayAvgSpeed;
+    PauseCount = 0;
+    PauseTotal = 0;
     while time < 30000
         %一般性新
+        PlayTime = time - PauseTotal;
         pkg  = pkg + 1;
         time = time + SndT;
         RTTc = E2ERTT .* MaxwellRnd(1);
@@ -70,10 +72,18 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         end
         %池子变化
         if StartSymbol == true
-            DownloadTempPool = DownloadTempPool + PkgAddin .* 4128 - CodeSpeed .* RndCS();
+            DownloadTempPool = DownloadTempPool + PkgAddin .* 4128 - CodeSpeed .* RndCS(1 + fix(PlayTime));
         else
             DownloadTempPool = DownloadTempPool + PkgAddin .* 4128;
         end
-
+        %卡顿和重播放判断
+        if (DownloadTempPool < CodeSpeed) && StartSymbol == true
+            StartSymbol = false;
+            PauseCount = PauseCount + 1; 
+        elseif (DownloadTempPool > 2700 * CodeSpeed) && (StartSymbol == false)
+            StartSymbol = true;
+        end
+        PauseTotal = PauseTotal + SndT;
     end
 end
+
