@@ -49,7 +49,7 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         PlayTime = time - PauseTotal;
         pkg  = pkg + 1;
         time = time + SndT;
-        RTTc = E2ERTT;% .* Replay(count);
+        RTTc = E2ERTT .* Replay(count);
         %新流体点
         Pipe.PkgNo(end + 1) = pkg;
         Pipe.SendTimeStamp(end + 1) = time;
@@ -71,12 +71,16 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         end
         %考察超时重传和快恢复并对流体进行清零
         if ((time - Pipe.SendTimeStamp(1)) > RTO)
-            Pipe = struct('PkgNo',Pipe.PkgNo(1),'SendTimeStamp',time,'RecTimePre',E2ERTT,'Acked',0);
+            %Pipe = struct('PkgNo',Pipe.PkgNo(1),'SendTimeStamp',time,'RecTimePre',E2ERTT,'Acked',0);
+            Pipe.PkgNo = Pipe.PkgNo(1);
+            Pipe.SendTimeStamp = time;
+            Pipe.RecTimePre = E2ERTT;
+            Pipe.Acked = 0;
             pkg  = Pipe.PkgNo(1);
         end
         %池子变化
         if StartSymbol == true
-            DownloadTempPool = DownloadTempPool + PkgAddin .* 4128 - CodeSpeed .* RndCS(1 + fix(PlayTime));
+            DownloadTempPool = DownloadTempPool + PkgAddin .* 4128 - SndT .* CodeSpeed .* RndCS(1 + fix(PlayTime));
         else
             DownloadTempPool = DownloadTempPool + PkgAddin .* 4128;
         end
@@ -87,7 +91,7 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         elseif (DownloadTempPool > 2700 * CodeSpeed) && (StartSymbol == false)
             StartSymbol = true;
         end
-        PauseTotal = PauseTotal + SndT .* StartSymbol;
+        PauseTotal = PauseTotal + SndT .* (~StartSymbol);
     end
 end
 
