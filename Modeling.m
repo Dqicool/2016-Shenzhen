@@ -4,7 +4,7 @@ function [InitialDataAmong, PauseTotal, InitialDelay, PauseCount] = Modeling(E2E
     InitialPreDelay                                     = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak, PlayAvgSpeed);
     [InitialDataAmong ,InitialDelay, DownloadTempPool]  = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, TotalAvgSpeed);
     InitialDelay                                        = InitialDelay + InitialPreDelay;
-    [PauseTotal, PauseCount]                            = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, Replay);
+    [PauseTotal, PauseCount]                            = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, RndRTT);
 end
 
 function InitialPreDelay = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak, PlayAvgSpeed)
@@ -32,7 +32,7 @@ function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, Ini
     InitialDataAmong = DownloadTempPool * 0.129844961240310;
 end
 
-function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, Replay)
+function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, RndRTT)
     StartSymbol = true;
     RTTs = E2ERTT;
     RTTd = 0.5 .* E2ERTT;
@@ -49,7 +49,7 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         PlayTime = time - PauseTotal;
         pkg  = pkg + 1;
         time = time + SndT;
-        RTTc = E2ERTT .* Replay(count);
+        RTTc = E2ERTT .* RndRTT(count);
         %新流体点
         Pipe.PkgNo(end + 1) = pkg;
         Pipe.SendTimeStamp(end + 1) = time;
@@ -94,4 +94,3 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
         PauseTotal = PauseTotal + SndT .* (~StartSymbol);
     end
 end
-
