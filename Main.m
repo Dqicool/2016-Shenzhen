@@ -5,11 +5,13 @@ OOInitialDelay      = zeros(max(size(CodeSpeed)), 1);
 OOPauseTotal        = zeros(max(size(CodeSpeed)), 1);
 OOPauseCount        = zeros(max(size(CodeSpeed)), 1);
 RndCS               = normrnd(1,0.33,60000,1);
-RndRTT              = 0.98 + 0.02 .* MaxwellRnd(600000)';
+RndRTT              = 0.9775 + 0.0225 .* normrnd(1,1,1,600000);
+Replay              = 1000 + 1700 .* cpmodel(InitialSpeedPeak, E2ERTT, PlayAvgSpeed);
 tic
     parfor ii = 1:max(size(CodeSpeed))
         [OOInitialDataAmong(ii), OOPauseTotal(ii), OOInitialDelay(ii), OOPauseCount(ii)] = ...
-        Modeling(E2ERTT(ii), PlayAvgSpeed(ii), InitialSpeedPeak(ii), CodeSpeed(ii), RndCS, TotalAvgSpeed(ii), RndRTT);
+        Modeling(E2ERTT(ii), PlayAvgSpeed(ii), InitialSpeedPeak(ii), CodeSpeed(ii), RndCS, TotalAvgSpeed(ii), RndRTT, Replay(ii));
+        %disp(ii);
     end
 toc
 clear ii RndCS RndRTT;
