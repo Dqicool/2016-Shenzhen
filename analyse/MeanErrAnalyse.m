@@ -5,6 +5,6 @@ function [ABSMerrIDA, MerrIDA, ABSMerrID, MerrID, ABSMerrPT, MerrPT, ABSMerrVMOS
     MerrPT      = mean(-(PauseTotal       - OOPauseTotal        )                    );
     MerrID      = mean(-(InitialDelay     - OOInitialDelay      ) ./ InitialDelay    );
     MerrIDA     = mean(-(InitialDataAmong - OOInitialDataAmong  ) ./ InitialDataAmong);
-    MerrVMOS    = mean(-(VMOS - OOVMOS  ) ./ VMOS);
-    ABSMerrVMOS = mean(abs(VMOS - OOVMOS  ) ./ VMOS);
+    MerrVMOS    = mean(-(VMOS - OOVMOS  ));
+    ABSMerrVMOS = mean(abs(VMOS - OOVMOS  ));
 end
