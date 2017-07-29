@@ -2,28 +2,27 @@ cc
 load data
 inputtmp    = [InitialSpeedPeak';PlayAvgSpeed';E2ERTT'];
 outputtmp   = [InitialDelay';InitialDataAmong'];
-[inputn,inps]   = mapminmax(inputtmp);
-[outputn,outps] = mapminmax(outputtmp);
-net         = newff(inputn,outputn,[5 5 5]);
-
-net.trainParam.epochs   = 89266;
-net.trainParam.lr       = 0.00001;
-net.trainParam.goal     = 0.00000001;
-net.trainParam.max_fail = 50;
-
-net         = train(net,inputn,outputn);
-
-load exdata
-intesttmp   = [InitialSpeedPeak';PlayAvgSpeed';E2ERTT'];
-outtesttmp  = [InitialDelay';InitialDataAmong'];
-intest      = mapminmax('apply',intesttmp,inps);
-outtest     = mapminmax('apply',outtesttmp,outps);
-anss        = sim(net, intest);
-bpout       = mapminmax('reverse', anss, outps);
-OOInitialDelay = bpout(1,:);
-OOIintialDataAmong = bpout(2,:);
-plot(InitialSpeedPeak, InitialDelay,'b.');
-hold on
-plot(InitialSpeedPeak, OOInitialDelay,'r.');
-hold off
-mean((InitialDelay - OOInitialDelay')./InitialDelay)
+[Inputn,InPs]   = mapminmax(inputtmp);
+[Outputn,OutPs] = mapminmax(outputtmp);
+%网络结构
+InputNum = 3;
+OutputNum = 2;
+HiddenNum = 5;
+%构建网络
+net = newff(Inputn,Outputn,HiddenNum);
+%遗传算法参数
+MaxGen = 50;        %迭代次数
+SizePop = 10;       %种群规模
+PCross = 0.2;       %交叉概率
+PMutation = 0.1;    %变异概率
+%节点数量
+NumSum = InputNum .* HiddenNum + HiddenNum + HiddenNum .* OutputNum + OutputNum;
+LengthChrom = ones(1,NumSum);                           %个体长度
+bound = [-3 * ones(NumSum, 1), 3 * ones(NumSum, 1)];    %个体范围
+%种族信息struct
+Individuals = struct('fitness', zeros(1, SizePop), 'chrom', []);
+AvgFitness  = [];
+BestFitness = [];
+BestChrom   = [];
+for ii = 1:SizePop
+    Individuals.chrom(ii, :) = Code(LengthChrom, bound);
