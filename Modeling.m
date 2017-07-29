@@ -34,7 +34,7 @@ function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, Ini
 end
 
 function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, RndRTT, Replay)
-    DownloadTempPool = PlayAvgSpeed * E2ERTT;
+    %DownloadTempPool = PlayAvgSpeed * E2ERTT;
     StartSymbol = true;
     RTTs = E2ERTT;
     RTTd = 0.5 .* E2ERTT;
@@ -53,7 +53,7 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
             pkg  = pkg + 1;
             time = time + SndT;
             RTTc = E2ERTT .* RndRTT(count);
-            %新�?体点
+            %新流体点
             Pipe.PkgNo(end + 1)         = pkg;
             Pipe.SendTimeStamp(end + 1) = time;
             Pipe.RecTimePre(end + 1)    = RTTc;
@@ -65,14 +65,14 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
             %考察已接收的包
             Pipe.Acked              = (time - Pipe.SendTimeStamp) > Pipe.RecTimePre;
             PkgAddin                = find(Pipe.Acked == 0, 1, 'first') - 1; 
-            %从�?中去掉已�?顺�?收到的包
+            %从管道中去掉已顺序收到的包
             if PkgAddin > 0
                 Pipe.PkgNo          = Pipe.PkgNo((PkgAddin + 1):end);
                 Pipe.SendTimeStamp  = Pipe.SendTimeStamp((PkgAddin + 1):end);
                 Pipe.RecTimePre     = Pipe.RecTimePre((PkgAddin + 1):end);
                 Pipe.Acked          = Pipe.Acked((PkgAddin + 1):end);
             end
-            %考察超时�?传和快�?��?并对�?体进行清零
+            %考察超时重传
             if ((time - Pipe.SendTimeStamp(1)) > RTO)% || (sum(Pipe.Acked) > 1))
                 Pipe.PkgNo          = Pipe.PkgNo(1);
                 Pipe.SendTimeStamp  = time;
@@ -80,10 +80,10 @@ function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeS
                 Pipe.Acked          = 0;
                 pkg                 = Pipe.PkgNo(1);
             end
-            %池�?�?�化
+            %池子变化
             DownloadTempPool    =   DownloadTempPool + PkgAddin .* 4128 - ...
                                     StartSymbol .* SndT .* CodeSpeed .* RndCS(1 + fix(PlayTime));
-            %�?�顿和�?播放判断
+            %卡顿和播放判断
             PauseJudge          =   DownloadTempPool < CodeSpeed .* SndT;
             ReplayJudge         =   (DownloadTempPool > Replay .* CodeSpeed);
             PauseCount          =   PauseCount +  PauseJudge .* StartSymbol;
