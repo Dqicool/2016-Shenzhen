@@ -1,12 +1,12 @@
 cc
 load data
 inputtmp    = [InitialSpeedPeak';PlayAvgSpeed';E2ERTT'];
-outputtmp   = [InitialDelay';InitialDataAmong'];
+outputtmp   = VMOS';
 [Inputn,InPs]   = mapminmax(inputtmp);
 [Outputn,OutPs] = mapminmax(outputtmp);
 %网络结构
 InputNum = 3;
-OutputNum = 2;
+OutputNum = 1;
 HiddenNum = 5;
 %构建网络
 net = newff(Inputn,Outputn,HiddenNum);
@@ -37,5 +37,28 @@ tracee = [AvgFitness, BestFitness];
 %进化开始
 for ii = 1:MaxGen
     disp(ii)
+    %选择
+    Individuals = Select(Individuals,SizePop);
+    AvgFitness = mean(Individuals.fitness);
+    %交叉
+    Individuals.chrom=Cross(PCross,LengthChrom,Individuals.chrom,SizePop,bound);
+    %变异
+    Individuals.chrom=Mutation(PMutation,LengthChrom,Individuals.chrom,SizePop,ii,MaxGen,bound);
+    for j=1:SizePop
+        x=Individuals.chrom(j,:); %解码
+        Individuals.fitness(j)=fun(x,InputNum,HiddenNum,OutputNum,net,Inputn,Outputn);   
+    end
+    [newbestfitness,newbestindex]=min(Individuals.fitness);
+    [worestfitness,worestindex]=max(Individuals.fitness);
+    % 代替上一次进化中最好的染色体
+    if BestFitness>newbestfitness
+        BestFitness=newbestfitness;
+        BestChrom=Individuals.chrom(newbestindex,:);
+    end
+    Individuals.chrom(worestindex,:)=BestChrom;
+    Individuals.fitness(worestindex)=BestFitness;
     
+    AvgFitness=mean(Individuals.fitness);
+    
+    tracee=[tracee;AvgFitness BestFitness];
 end
