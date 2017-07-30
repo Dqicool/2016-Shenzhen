@@ -21,10 +21,21 @@ LengthChrom = ones(1,NumSum);                           %个体长度
 bound = [-3 * ones(NumSum, 1), 3 * ones(NumSum, 1)];    %个体范围
 %种族信息struct
 Individuals = struct('fitness', zeros(1, SizePop), 'chrom', []);
-AvgFitness  = [];
-BestFitness = [];
-BestChrom   = [];
+
 for ii = 1:SizePop
-    Individuals.chrom(ii, :) = Code(LengthChrom, bound);
+    Individuals.chrom(ii, :) = Code(LengthChrom, bound); %随机产生一个种群
     x = Individuals.chrom(ii, :);
-    Individuals.fitness(ii) = fun()
+    Individuals.fitness(ii) = fun(x, InputNum, HiddenNum, OutputNum, net, Inputn, Outputn); %染色体的适应度
+end
+
+[BestFitness, BestIndex]=min(Individuals.fitness);
+BestChrom   = Individuals.chrom(BestIndex,:);
+AvgFitness = mean(Individuals.fitness);
+
+tracee = [AvgFitness, BestFitness];
+
+%进化开始
+for ii = 1:MaxGen
+    disp(ii)
+    
+end

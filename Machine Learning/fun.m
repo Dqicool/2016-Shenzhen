@@ -6,4 +6,20 @@ function errorr = fun(x, inputnum, hiddennum, outputnum, net, inputn, outputn)
 
     net = newff(inputn, outputn, hiddennum);
     
+    net.trainParam.epochs=20;
+    net.trainParam.lr=0.1;
+    net.trainParam.goal=0.00001;
+    net.trainParam.show=100;
+    net.trainParam.showWindow=0;
+
+    net.iw{1,1}=reshape(w1,hiddennum,inputnum);
+    net.lw{2,1}=reshape(w2,outputnum,hiddennum);
+    net.b{1}=reshape(B1,hiddennum,1);
+    net.b{2}=B2;
+
+    net=train(net,inputn,outputn);
+
+    an=sim(net,inputn);
+
+    errorr = sum(abs(an-outputn));
 end
