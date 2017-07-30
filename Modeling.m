@@ -10,74 +10,26 @@ end
 function InitialPreDelay = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPeak, PlayAvgSpeed)
     InitialPreDelay = 2.5 .* E2ERTT;
     adPack          = 4200000;
-    Speedtmp        = PlayAvgSpeed .* (2 + cpmodel(InitialSpeedPeak,E2ERTT,PlayAvgSpeed));
-    InitialPreDelay = InitialPreDelay + (adPack ./ Speedtmp) .* (TotalAvgSpeed >= 380);
+    InitialPreDelay = InitialPreDelay + adPack ./ (PlayAvgSpeed .* (2 + cpmodel(InitialSpeedPeak,E2ERTT,PlayAvgSpeed))) .* (TotalAvgSpeed >= 380);
 end
 
-function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, TotalAvgSpeed, RndRTTi, PlayAvgSpeed)
-    StartSymbol = false;
-    RTTs = E2ERTT;
-    RTTd = 0.5 .* E2ERTT;
-    time = 0;
-    pkg  = 1;
-    pkgMax = InitialSpeedPeak * E2ERTT / 4288;
-    pkgCurrent = 9 * cpmodel(InitialSpeedPeak,E2ERTT,PlayAvgSpeed) + 1;
-    Pipe = struct('PkgNo',1,'SendTimeStamp',0,'RecTimePre',E2ERTT,'Acked',0);
-    InitialDelay = 0;
-    count = 0;
-    DownloadTempPool = 0;
-    while StartSymbol == 0
-
-        count = count + 1;
-        pkg  = pkg + 1;
-        SndT = E2ERTT ./ pkgCurrent;
-        time = time + SndT;
-        RTTc = E2ERTT .* RndRTTi(count);
-
-        Pipe.PkgNo(end + 1) = pkg;
-        Pipe.SendTimeStamp(end + 1) = time;
-        Pipe.RecTimePre(end + 1) = RTTc;
-        Pipe.Acked(end + 1) = 0;
-
-        RTTs = 0.875 .* RTTs + 0.125 .* RTTc;
-        RTTd = 0.75 .* RTTd + 0.25 .* abs(RTTs - RTTc);
-        RTO  = RTTs + 4 .* RTTd;
-
-        Pipe.Acked = (time - Pipe.SendTimeStamp) > Pipe.RecTimePre;
-        PkgAddin = find(Pipe.Acked == 0, 1, 'first') - 1; 
-
-        if PkgAddin > 0
-            Pipe.PkgNo = Pipe.PkgNo((PkgAddin + 1):end);
-            Pipe.SendTimeStamp = Pipe.SendTimeStamp((PkgAddin + 1):end);
-            Pipe.RecTimePre = Pipe.RecTimePre((PkgAddin + 1):end);
-            Pipe.Acked = Pipe.Acked((PkgAddin + 1):end);
-
-            if pkgCurrent < 0.5 * pkgMax
-                pkgCurrent = pkgCurrent + PkgAddin;
-            elseif (pkgCurrent >= 0.5 * pkgMax) && (pkgCurrent < pkgMax)
-                pkgCurrent = pkgCurrent + PkgAddin / pkgCurrent;
-            else
-                pkgCurrent = 0.5 * pkgCurrent;
-            end
-        end
-
-        if ((time - Pipe.SendTimeStamp(1)) > RTO)
-
-            Pipe.PkgNo = Pipe.PkgNo(1);
-            Pipe.SendTimeStamp = time;
-            Pipe.RecTimePre = E2ERTT;
-            Pipe.Acked = 0;
-            pkg  = Pipe.PkgNo(1);
-            pkgCurrent = 10;
-        end
-
-        DownloadTempPool = DownloadTempPool + PkgAddin .* 4128 .* (~StartSymbol);
-
-        StartSymbol = logical((DownloadTempPool > (CodeSpeed .* 4000))  + ...
-                            (TotalAvgSpeed < 380) .* (DownloadTempPool > 200 * CodeSpeed));
-        InitialDelay = InitialDelay  + SndT .* (~StartSymbol);
+function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, ~,TotalAvgSpeed)
+    global DataSize    
+    InitialDelay        = zeros(DataSize, 1);
+    StartSymbol         = false(DataSize, 1);
+    DownloadTempPool    = zeros(DataSize, 1);
+    MaxCwnd             = InitialSpeedPeak .* E2ERTT;
+    CurrentCwnd         = 20640;                                            %21440 - 800; cwnd1 = 42880
+    while sum(StartSymbol) < DataSize
+        InitialDelay        = InitialDelay + (~StartSymbol) .* E2ERTT;
+        CurrentCwnd         = 2 * CurrentCwnd .* (CurrentCwnd < 0.5 * MaxCwnd) + ...
+                              0.75 * MaxCwnd .* (CurrentCwnd >= 0.5 * MaxCwnd);
+        CurrentSpeed        = (~StartSymbol) .* CurrentCwnd;
+        DownloadTempPool    = DownloadTempPool + CurrentSpeed;
+        StartSymbol         = logical((DownloadTempPool > CodeSpeed .* 4000)  + ...
+                                      (TotalAvgSpeed < 380) .* (DownloadTempPool > 200 * CodeSpeed));
     end
-    InitialDataAmong = (DownloadTempPool + 0.5 * pkgCurrent * 4128) * 0.129844961240310;
+    InitialDataAmong = DownloadTempPool * 0.129844961240310;
 end
 
 function [PauseTotal, PauseCount] = ModelP(DownloadTempPool, PlayAvgSpeed, CodeSpeed, E2ERTT, RndCS, RndRTT, Replay)
