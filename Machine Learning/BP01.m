@@ -26,3 +26,5 @@ BestFitness = [];
 BestChrom   = [];
 for ii = 1:SizePop
     Individuals.chrom(ii, :) = Code(LengthChrom, bound);
+    x = Individuals.chrom(ii, :);
+    Individuals.fitness(ii) = fun()
