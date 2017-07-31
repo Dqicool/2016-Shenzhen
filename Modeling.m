@@ -13,7 +13,7 @@ function InitialPreDelay = InitialPrepare(E2ERTT, TotalAvgSpeed, InitialSpeedPea
     InitialPreDelay = InitialPreDelay + adPack ./ (PlayAvgSpeed .* (2 + cpmodel(InitialSpeedPeak,E2ERTT,PlayAvgSpeed))) .* (TotalAvgSpeed >= 380);
 end
 
-function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, ~,TotalAvgSpeed)
+function [InitialDataAmong, InitialDelay, DownloadTempPool] = ModelI(E2ERTT, InitialSpeedPeak, CodeSpeed, ~ ,TotalAvgSpeed)
     global DataSize    
     InitialDelay        = zeros(DataSize, 1);
     StartSymbol         = false(DataSize, 1);
