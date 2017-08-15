@@ -9,10 +9,10 @@ RndRTT              = 0.985 + 0.015 .* normrnd(1,1,1,600000);
 RndRTTi             = 1 - 2e-5 + 2e-5 .* normrnd(1,1,1,600000);
 Replay              = 1000 + 1700 .* cpmodel(InitialSpeedPeak, E2ERTT, PlayAvgSpeed);
 tic
-    parfor ii = 1:max(size(CodeSpeed))
+    for ii = 1:max(size(CodeSpeed))
         [OOInitialDataAmong(ii), OOPauseTotal(ii), OOInitialDelay(ii), OOPauseCount(ii)] = ...
         Modeling(E2ERTT(ii), PlayAvgSpeed(ii), InitialSpeedPeak(ii), CodeSpeed(ii), RndCS, TotalAvgSpeed(ii), RndRTT, Replay(ii), RndRTTi);
-        %disp(ii);
+        disp(ii);
     end
 toc
 clear ii RndCS RndRTT;

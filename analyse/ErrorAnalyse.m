@@ -14,11 +14,11 @@ function [ErrPC, ErrID,ErrPT,ErrIDA] = ErrorAnalyse(PauseCount ,InitialDelay, Pa
                    sum(ABSTmpID     ./ InitialDelay     < 0.40) ./ DataSize;
                    sum(ABSTmpID     ./ InitialDelay     < 0.80) ./ DataSize];
 
-    ErrPT       = [sum((ABSTmpPT                        <  100)); 
-                   sum((ABSTmpPT                        <  200));
-                   sum((ABSTmpPT                        <  400));
-                   sum((ABSTmpPT                        <  800));
-                   sum((ABSTmpPT                        <  1600))];
+    ErrPT       = [sum((ABSTmpPT)    ./ (PauseTotal + 0.01)       < 0.05) ./ DataSize; 
+                   sum((ABSTmpPT)    ./ (PauseTotal + 0.01)       < 0.10) ./ DataSize;
+                   sum((ABSTmpPT)    ./ (PauseTotal + 0.01)       < 0.20) ./ DataSize;
+                   sum((ABSTmpPT)    ./ (PauseTotal + 0.01)       < 0.40) ./ DataSize;
+                   sum((ABSTmpPT)    ./ (PauseTotal + 0.01)       < 0.80) ./ DataSize];
 
     ErrIDA      = [sum(ABSTmpIDA    ./ InitialDataAmong < 0.05) ./ DataSize; 
                    sum(ABSTmpIDA    ./ InitialDataAmong < 0.10) ./ DataSize;
